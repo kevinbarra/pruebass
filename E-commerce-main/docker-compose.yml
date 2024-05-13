@@ -1,0 +1,131 @@
+version: '3.8'
+
+services:
+  auth:
+    build: ./auth
+    volumes:
+      - ./auth:/app
+    working_dir: /app
+    ports:
+      - "5001:5000"
+    env_file:
+      - ./auth/.env.dev
+    depends_on:
+      - postgres
+  
+  users:
+    build: ./users
+    volumes:
+      - ./users:/app
+    working_dir: /app
+    ports:
+      - "5002:5000"
+    env_file:
+      - ./users/.env.dev
+    depends_on:
+      - postgres
+
+  orders:
+    build: ./orders
+    volumes:
+      - ./orders:/app
+    working_dir: /app
+    ports:
+      - "5003:5000"
+    env_file:
+      - ./orders/.env.dev
+    depends_on:
+      - postgres
+  
+  products:
+    build: ./products
+    volumes:
+      - ./products:/app
+    working_dir: /app
+    ports:
+      - "5004:5000"
+    env_file:
+      - ./products/.env.dev
+    depends_on:
+      - mongo
+  
+  email:
+    build: ./email
+    volumes:
+      - ./email:/app
+      - email_node_modules:/app/node_modules
+    working_dir: /app
+    ports:
+      - "5005:5000"
+    env_file:
+      - ./email/.env.dev
+
+  carrito:
+    build: ./carrito/flaskapp
+    volumes:
+      - ./carrito/flaskapp:/app
+    working_dir: /app
+    ports:
+      - "5006:5000"
+    depends_on:
+      - redis
+    env_file:
+      - ./carrito/.env.dev
+
+  gateway:
+    build: ./gateway
+    volumes:
+      - ./gateway:/app
+    working_dir: /app
+    ports:
+      - "8000:6789"
+    env_file:
+      - ./gateway/.env.dev
+    depends_on:
+      - auth
+      - users
+      - orders    
+      - products
+      - email 
+      - carrito
+      - redis
+      - mongo
+      - postgres
+
+  web:
+    build: ./web
+    volumes:
+      - ./web:/app
+      - web_node_modules:/app/node_modules
+    working_dir: /app
+    ports:
+      - "3000:5173"
+  
+  redis:
+    build: ./carrito/redis
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+
+  postgres:
+    build: ./postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  
+  mongo:
+    image: mongo:7.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: 1234
+      MONGO_INITDB_DATABASE: stock_db
+    volumes: 
+      - mongo_data:/data/db
+
+volumes:
+  postgres_data:
+  mongo_data:
+  web_node_modules:
+  email_node_modules:
+  redis_data:
+    driver: local

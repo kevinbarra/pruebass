@@ -1,0 +1,15 @@
+# Dependencias
+node_modules/
+
+# Archivos de entorno
+.env
+
+# Directorio de caché
+.cache/
+
+# Directorios de logs
+logs/
+*.log
+
+# Archivos temporales
+tmp/
